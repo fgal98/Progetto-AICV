@@ -11,13 +11,16 @@ from gtts import gTTS
 from inference_sdk import InferenceHTTPClient
 
 # ---------------- CONFIGURAZIONE ----------------
-MODEL_ID = "nome-progetto/1"   # ID del progetto Roboflow / numero di versione
+MODEL_ID = "money-detection-v3-1-yolo26s-t1"   # ID del progetto Roboflow / numero di versione
 SOGLIA = 0.60                  # soglia di confidenza scelta sul validation set
 USA_UPLOADER = False           # True se st.camera_input apre la fotocamera frontale
 
-# Nomi delle classi nel dataset -> valore in euro
-VALORI = {"eur_5": 5, "eur_10": 10, "eur_20": 20,
-          "eur_50": 50, "eur_100": 100, "eur_200": 200}
+# Nomi delle classi nel dataset -> valore in CENTESIMI
+VALORI = {"eur_5": 500, "eur_10": 1000, "eur_20": 2000,
+          "eur_50": 5000, "eur_100": 10000, "eur_200": 20000,
+          "eur_2": 200, "eur_1": 100,
+          "cent_50": 50, "cent_20": 20, "cent_10": 10,
+          "cent_5": 5, "cent_2": 2, "cent_1": 1}
 
 client = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
@@ -34,18 +37,29 @@ def rileva(img):
     return tutte, sopra
 
 
+def in_parole(c):
+    """Importo in centesimi -> testo: 250 -> '2 euro e 50 centesimi'."""
+    euro, cent = divmod(c, 100)
+    cent_txt = "1 centesimo" if cent == 1 else f"{cent} centesimi"
+    if euro and cent:
+        return f"{euro} euro e {cent_txt}"
+    return f"{euro} euro" if euro else cent_txt
+
+
 def componi_messaggio(tutte, sopra):
     """Trasforma le previsioni in una frase breve, pensata per l'ascolto."""
     if not tutte:
-        return "Nessuna banconota. Avvicina la fotocamera."
-    if not sopra:
+        return "Nessun contante. Avvicina la fotocamera."
+    valori = sorted((VALORI[p["class"]] for p in sopra if p["class"] in VALORI),
+                    reverse=True)
+    if not valori:
         return "Non sono sicuro. Riprova."
-    valori = sorted(VALORI[p["class"]] for p in sopra if p["class"] in VALORI)
     if len(valori) == 1:
-        return f"{valori[0]} euro"
+        return in_parole(valori[0])
     conteggio = Counter(valori)
-    parti = [f"{n} da {v}" if n > 1 else f"{v}" for v, n in sorted(conteggio.items())]
-    return f"{len(valori)} banconote: {', '.join(parti)} euro. Totale {sum(valori)} euro."
+    parti = [f"{n} da {in_parole(v)}" if n > 1 else in_parole(v)
+             for v, n in sorted(conteggio.items(), reverse=True)]
+    return f"{len(valori)} pezzi: {', '.join(parti)}. Totale {in_parole(sum(valori))}."
 
 
 def parla(testo):
