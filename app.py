@@ -12,7 +12,7 @@ import base64
 import requests
 
 # ---------------- CONFIGURAZIONE ----------------
-MODEL_ID = "money-detection-v3-1-yolo26s-t1"   # ID del progetto Roboflow / numero di versione
+MODEL_ID = "money-detection-2/money-detection-v3-1-yolo26s-t1"   # ID del progetto Roboflow / numero di versione
 SOGLIA = 0.60                  # soglia di confidenza scelta sul validation set
 USA_UPLOADER = False           # True se st.camera_input apre la fotocamera frontale
 
