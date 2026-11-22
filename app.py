@@ -13,7 +13,7 @@ import requests
 
 # ---------------- CONFIGURAZIONE ----------------
 MODEL_ID = "money-detection-2/money-detection-v3-1-yolo26s-t1"   # ID del progetto Roboflow / numero di versione
-SOGLIA = 0.60                  # soglia di confidenza scelta sul validation set
+SOGLIA = 0.40                  # soglia di confidenza scelta sul validation set
 USA_UPLOADER = False           # True se st.camera_input apre la fotocamera frontale
 
 # Nomi delle classi nel dataset -> valore in CENTESIMI
