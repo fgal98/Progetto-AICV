@@ -8,7 +8,8 @@ from collections import Counter
 import streamlit as st
 from PIL import Image, ImageDraw
 from gtts import gTTS
-from inference_sdk import InferenceHTTPClient
+import base64
+import requests
 
 # ---------------- CONFIGURAZIONE ----------------
 MODEL_ID = "money-detection-v3-1-yolo26s-t1"   # ID del progetto Roboflow / numero di versione
@@ -22,17 +23,21 @@ VALORI = {"eur_5": 500, "eur_10": 1000, "eur_20": 2000,
           "cent_50": 50, "cent_20": 20, "cent_10": 10,
           "cent_5": 5, "cent_2": 2, "cent_1": 1}
 
-client = InferenceHTTPClient(
-    api_url="https://serverless.roboflow.com",
-    api_key=st.secrets["ROBOFLOW_API_KEY"],
-)
-
 
 # ---------------- FUNZIONI ----------------
 def rileva(img):
-    """Chiama il modello e tiene solo le previsioni sopra soglia."""
-    risultato = client.infer(img, model_id=MODEL_ID)
-    tutte = risultato.get("predictions", [])
+    """Manda l'immagine al modello Roboflow e tiene solo le previsioni sopra soglia."""
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=90)
+    risposta = requests.post(
+        f"https://serverless.roboflow.com/{MODEL_ID}",
+        params={"api_key": st.secrets["ROBOFLOW_API_KEY"]},
+        data=base64.b64encode(buf.getvalue()).decode(),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=30,
+    )
+    risposta.raise_for_status()
+    tutte = risposta.json().get("predictions", [])
     sopra = [p for p in tutte if p["confidence"] >= SOGLIA]
     return tutte, sopra
 
@@ -100,6 +105,7 @@ else:
 
 if foto is not None:
     img = Image.open(foto).convert("RGB")
+    img.thumbnail((1280, 1280))
     with st.spinner("Riconoscimento in corso..."):
         tutte, sopra = rileva(img)
     messaggio = componi_messaggio(tutte, sopra)
