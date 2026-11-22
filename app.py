@@ -36,7 +36,9 @@ def rileva(img):
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=30,
     )
-    risposta.raise_for_status()
+    if not risposta.ok:
+        st.error(f"Errore Roboflow {risposta.status_code}: {risposta.text[:300]}")
+        st.stop()
     tutte = risposta.json().get("predictions", [])
     sopra = [p for p in tutte if p["confidence"] >= SOGLIA]
     return tutte, sopra
