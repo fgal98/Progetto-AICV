@@ -98,7 +98,7 @@ st.markdown("""
                padding: 1rem; border-radius: 12px; background: #000; color: #FFD400; }
 </style>""", unsafe_allow_html=True)
 
-st.title("Che banconota è?")
+st.title("Money Detector")
 
 if USA_UPLOADER:
     foto = st.file_uploader("Scatta una foto della banconota", type=["jpg", "jpeg", "png"])
