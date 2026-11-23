@@ -89,7 +89,7 @@ def disegna_box(img, previsioni):
 
 
 # ---------------- INTERFACCIA ----------------
-st.set_page_config(page_title="Che banconota è?", layout="centered")
+st.set_page_config(page_title="Money detector", layout="centered")
 st.markdown("""
 <style>
   /* pulsante della fotocamera grande e facile da trovare */
