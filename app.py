@@ -103,7 +103,7 @@ st.title("Money Detector")
 if USA_UPLOADER:
     foto = st.file_uploader("Scatta una foto della banconota", type=["jpg", "jpeg", "png"])
 else:
-    foto = st.camera_input("Inquadra la banconota e scatta")
+    foto = st.camera_input("Inquadra i tuoi contanti: il sistema li conterà per te")
 
 if foto is not None:
     img = Image.open(foto).convert("RGB")
